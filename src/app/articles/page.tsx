@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, FileText, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { getArticles } from "@/lib/articles";
 
 export default function ArticlesPage() {
@@ -17,35 +17,18 @@ export default function ArticlesPage() {
           返回首页
         </Link>
 
-        <header className="mb-10 flex items-end justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-800">
-              全部随笔
-            </h1>
-            <p className="mt-2 text-sm text-zinc-500">
-              共 {articles.length} 篇
-            </p>
-          </div>
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-800 px-4 py-2 text-xs font-medium text-white transition hover:bg-zinc-700"
-          >
-            <Plus size={13} />
-            写随笔
-          </Link>
+        <header className="mb-10">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-800">
+            全部随笔
+          </h1>
+          <p className="mt-2 text-sm text-zinc-500">
+            共 {articles.length} 篇
+          </p>
         </header>
 
         {articles.length === 0 ? (
           <div className="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-zinc-200/60">
-            <FileText size={32} className="mx-auto text-zinc-300 mb-3" />
-            <p className="text-sm text-zinc-400 mb-4">还没有文章</p>
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-800 px-4 py-2 text-xs font-medium text-white transition hover:bg-zinc-700"
-            >
-              <Plus size={13} />
-              写一篇
-            </Link>
+            <p className="text-sm text-zinc-400">还没有文章</p>
           </div>
         ) : (
           <div className="space-y-1">

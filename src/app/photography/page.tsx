@@ -29,13 +29,7 @@ export default function PhotographyPage() {
         {photos.length === 0 ? (
           <div className="rounded-2xl bg-white p-16 text-center shadow-sm ring-1 ring-zinc-200/60">
             <Camera size={40} className="mx-auto text-zinc-300 mb-4" />
-            <p className="text-sm text-zinc-500 mb-4">还没有照片</p>
-            <Link
-              href="/admin"
-              className="text-sm text-zinc-500 underline underline-offset-4 hover:text-zinc-700 transition-colors"
-            >
-              去后台上传 →
-            </Link>
+            <p className="text-sm text-zinc-500">还没有照片</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
