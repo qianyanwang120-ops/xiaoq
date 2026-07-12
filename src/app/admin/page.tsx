@@ -189,28 +189,79 @@ export default function AdminPage() {
         <div className="mx-auto max-w-xl px-4 py-6 sm:px-6">
           <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60">
             <h2 className="mb-5 text-sm font-semibold text-zinc-500">编辑个人资料</h2>
-            <form onSubmit={handleProfileSave} className="space-y-5">
+            <div className="space-y-5">
+              {/* 头像预览 */}
               <div className="flex items-center gap-4">
-                <div className={`flex size-16 items-center justify-center rounded-2xl ring-1 ring-zinc-200 shadow-sm ${profile.avatarType === "emoji" ? "bg-zinc-50 text-3xl" : "bg-zinc-100 text-2xl font-semibold text-zinc-500"}`}>
-                  {profile.avatarType === "emoji" ? profile.avatarValue || "🐱" : (profile.avatarValue || "xq").slice(0, 2).toUpperCase()}
+                <div className={`flex size-16 items-center justify-center rounded-2xl ring-1 ring-zinc-200 shadow-sm overflow-hidden ${profile.avatarType === "image" ? "" : profile.avatarType === "emoji" ? "bg-zinc-50 text-3xl" : "bg-zinc-100 text-2xl font-semibold text-zinc-500"}`}>
+                  {profile.avatarType === "image" && profile.avatarValue ? (
+                    <img src={`/avatars/${profile.avatarValue}`} alt="头像" className="size-full object-cover" />
+                  ) : profile.avatarType === "emoji" ? (
+                    profile.avatarValue || "🐱"
+                  ) : (
+                    (profile.avatarValue || "xq").slice(0, 2).toUpperCase()
+                  )}
                 </div>
-                <div><p className="text-sm font-medium text-zinc-700">头像预览</p><p className="text-xs text-zinc-400">修改后首页生效</p></div>
+                <div><p className="text-sm font-medium text-zinc-700">头像预览</p><p className="text-xs text-zinc-400">修改后首页即时生效</p></div>
               </div>
+
+              {/* 头像类型 */}
               <div>
                 <label className="block text-xs font-medium text-zinc-400 mb-2">头像类型</label>
                 <div className="flex gap-2">
-                  {[{ value: "initials", label: "字母" }, { value: "emoji", label: "表情" }].map(o => (
-                    <button key={o.value} type="button" onClick={() => setProfile({ ...profile, avatarType: o.value as "initials" | "emoji" })} className={`rounded-lg px-4 py-2 text-xs font-medium transition cursor-pointer ${profile.avatarType === o.value ? "bg-zinc-800 text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"}`}>{o.label}</button>
+                  {[{ value: "image", label: "照片" }, { value: "emoji", label: "表情" }, { value: "initials", label: "字母" }].map(o => (
+                    <button key={o.value} type="button" onClick={() => setProfile({ ...profile, avatarType: o.value as typeof profile.avatarType })}
+                      className={`rounded-lg px-4 py-2 text-xs font-medium transition cursor-pointer ${profile.avatarType === o.value ? "bg-zinc-800 text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"}`}>{o.label}</button>
                   ))}
                 </div>
               </div>
-              <div><label className="block text-xs font-medium text-zinc-400 mb-1">{profile.avatarType === "initials" ? "字母缩写（最多2个）" : "Emoji 表情"}</label><input type="text" value={profile.avatarValue} onChange={e => setProfile({ ...profile, avatarValue: e.target.value.slice(0, profile.avatarType === "initials" ? 2 : 4) })} className="w-full rounded-xl border border-zinc-200 px-4 py-2.5 text-sm text-zinc-800 outline-none focus:border-zinc-400" maxLength={profile.avatarType === "initials" ? 2 : 4} /></div>
-              <div><label className="block text-xs font-medium text-zinc-400 mb-1">个性签名</label><textarea value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })} rows={4} className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm text-zinc-800 leading-relaxed outline-none focus:border-zinc-400 resize-none" placeholder="写一段话介绍自己..." /></div>
-              <div className="flex items-center gap-3">
-                <button type="submit" className="rounded-xl bg-zinc-800 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 cursor-pointer">保存</button>
-                {profileMsg && <span className="text-xs text-emerald-600">{profileMsg}</span>}
+
+              {/* 照片上传 */}
+              {profile.avatarType === "image" ? (
+                <div>
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">上传头像图片</label>
+                  <input type="file" accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const fd = new FormData(); fd.append("file", file);
+                      const res = await fetch("/api/profile", { method: "PUT", body: fd });
+                      if (res.ok) { const updated = await res.json(); setProfile(updated); setProfileMsg("头像已更新 ✓"); }
+                      else { setProfileMsg("上传失败"); }
+                    }}
+                    className="w-full text-xs text-zinc-500 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-zinc-700 file:cursor-pointer hover:file:bg-zinc-200"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">
+                    {profile.avatarType === "initials" ? "字母缩写（最多2个）" : "Emoji 表情"}
+                  </label>
+                  <input type="text" value={profile.avatarValue}
+                    onChange={e => setProfile({ ...profile, avatarValue: e.target.value.slice(0, profile.avatarType === "initials" ? 2 : 4) })}
+                    className="w-full rounded-xl border border-zinc-200 px-4 py-2.5 text-sm text-zinc-800 outline-none focus:border-zinc-400"
+                    maxLength={profile.avatarType === "initials" ? 2 : 4} />
+                  {/* 字母/表情需要点保存 */}
+                  <div className="flex items-center gap-3 mt-5">
+                    <button type="button" onClick={handleProfileSave}
+                      className="rounded-xl bg-zinc-800 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 cursor-pointer">保存</button>
+                    {profileMsg && <span className="text-xs text-emerald-600">{profileMsg}</span>}
+                  </div>
+                </div>
+              )}
+
+              {/* 个性签名 */}
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">个性签名</label>
+                <textarea value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })}
+                  rows={4} className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm text-zinc-800 leading-relaxed outline-none focus:border-zinc-400 resize-none"
+                  placeholder="写一段话介绍自己..." />
+                <div className="flex items-center gap-3 mt-5">
+                  <button type="button" onClick={handleProfileSave}
+                    className="rounded-xl bg-zinc-800 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 cursor-pointer">保存</button>
+                  {profileMsg && <span className="text-xs text-emerald-600">{profileMsg}</span>}
+                </div>
               </div>
-            </form>
+            </div>
           </section>
         </div>
       )}
